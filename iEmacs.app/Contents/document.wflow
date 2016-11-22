@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>428</string>
+	<key>AMApplicationVersion</key>
+	<string>2.7</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>2.0.3</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<dict/>
+					<key>CheckedForUserDefaultShell</key>
+					<dict/>
+					<key>inputMethod</key>
+					<dict/>
+					<key>shell</key>
+					<dict/>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run Shell Script.action</string>
+				<key>ActionName</key>
+				<string>Shell-Skript ausführen</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<string><![CDATA[#!/bin/bash
+
+#================================================================
+# HEADER
+#================================================================
+#% SYNOPSIS
+#+    ${SCRIPT_NAME} [ files ... ]
+#%
+#% DESCRIPTION
+#%    This script opens a new frame in Emacs using emacsclient. If
+#%    there is no Emacs instance running in server mode this script
+#%    launches an Emacs instace in server mode.
+#%
+#%    When the Emacs server has to be launched a system notification
+#%    is shown.
+#%
+#%    This script does not wait for the editor signalling that editing has
+#%    finished. It directly returns afer opening the frame. If you require
+#%    waiting please use emacsclient directly.
+#%
+#% OPTIONS
+#%    -h, --help                    Print this help
+#%    -v, --version                 Print script information
+#%
+#% EXAMPLES
+#%    ${SCRIPT_NAME}
+#%
+#%        opens a frame displaying the *scratch* buffer
+#%
+#%    ${SCRIPT_NAME} test.txt
+#%
+#%        opens a frame displaying the file test.txt
+#%
+#================================================================
+#- IMPLEMENTATION
+#-    Version         0.0.1
+#-    Author          Christoph D. Hermann
+#-    Copyright       Copyright (c) http://www.itbh.at/
+#-    License         GNU General Public License
+#-
+#================================================================
+#  HISTORY
+#     2016-11-18 : cdhermann : Script creation
+#
+#================================================================
+# END_OF_HEADER
+#================================================================
+
+
+# Running in Automator no PATH variable is available. This makes all
+# required commands usable without providing the full paths to the
+# executables.
+source /etc/profile
+
+# Socket file of Emacs running in server mode
+# Detection based on http://stackoverflow.com/a/28553846/6114176
+socket_file=$(lsof -c Emacs | grep server | tr -s " " | cut -d' ' -f8)
+
+# Counter used while waiting for the Emacs server socket
+COUNTER=0
+
+# Checks 5 times every 5 seconds if a socket file is available.  If so
+# the socket_file variable is set to the socket file and the return
+# code is 0. Otherwise, the socket_file variable is set to the empty
+# string and the return code is 1.
+function is_server_up {
+    socket_file=$(lsof -c Emacs | grep server | tr -s " " | cut -d' ' -f8)
+    while [[ $socket_file == "" ]];
+    do
+        if [[ $COUNTER -gt 4 ]]; then
+            socket_file=""
+            return 1
+        fi
+        sleep 5s
+        socket_file=$(lsof -c Emacs | grep server | tr -s " " | cut -d' ' -f8)
+        (( COUNTER++ ))
+    done
+    return 0
+}
+
+if [[ $socket_file == "" ]]; then
+    echo "Launching Emacs server ..."
+    osascript -e 'display notification "This may take some time." with title "Launching Emacs server ..."'
+    nohup emacs --eval '(server-start)' "$@" </dev/null >/dev/null 2>&1 &
+    if is_server_up; then
+        # return and indicate success
+        exit 0
+    else
+        # inidcate error if server doesn't start up
+        echo "Launching Emacs server failed."
+        osascript -e 'display notification "Starting up Emacs server took to long." with title "Launching Emacs server failed."'
+        exit 2
+    fi
+fi
+
+echo "Opening Emacs frame ..."
+emacsclient -n -c -s "$socket_file" "$@"
+]]></string>
+					<key>CheckedForUserDefaultShell</key>
+					<true/>
+					<key>inputMethod</key>
+					<integer>1</integer>
+					<key>shell</key>
+					<string>/bin/bash</string>
+					<key>source</key>
+					<string></string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.RunShellScript</string>
+				<key>CFBundleVersion</key>
+				<string>2.0.3</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunShellScriptAction</string>
+				<key>InputUUID</key>
+				<string>5F4762CE-245F-49CF-B292-F42ED4FC6512</string>
+				<key>Keywords</key>
+				<array>
+					<string>Shell</string>
+					<string>Skript</string>
+					<string>Befehl</string>
+					<string>Ausführen</string>
+					<string>Unix</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>3B18EFFD-B483-4356-8045-D31042C3FE13</string>
+				<key>UUID</key>
+				<string>DAA87224-77AC-4E8F-9A01-2472663A6DE3</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<integer>0</integer>
+						<key>name</key>
+						<string>inputMethod</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+					<key>1</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>1</string>
+					</dict>
+					<key>2</key>
+					<dict>
+						<key>default value</key>
+						<false/>
+						<key>name</key>
+						<string>CheckedForUserDefaultShell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>2</string>
+					</dict>
+					<key>3</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>COMMAND_STRING</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>3</string>
+					</dict>
+					<key>4</key>
+					<dict>
+						<key>default value</key>
+						<string>/bin/sh</string>
+						<key>name</key>
+						<string>shell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>4</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<true/>
+				<key>location</key>
+				<string>309.000000:468.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/German.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<true/>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict/>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.application</string>
+	</dict>
+</dict>
+</plist>
