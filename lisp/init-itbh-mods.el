@@ -17,6 +17,11 @@
 (global-set-key (kbd "C-M-+") 'default-text-scale-increase)
 (global-set-key (kbd "C-M--") 'default-text-scale-decrease)
 
+;;----------------------------------------------------------------------------
+;; Enable printing using the web browser
+;;----------------------------------------------------------------------------
+(require 'itbh-print)
+(global-set-key (kbd "C-c i p") 'itbh-print)
 
 (provide 'init-itbh-mods)
 ;;; init-itbh-mods.el ends here
